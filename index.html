@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bitcoin FIFO Tracker</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <h1>Bitcoin FIFO Tracker</h1>
+
+    <!-- Transaction Input Form -->
+    <div class="transaction-form">
+        <h3>Add Transaction</h3>
+        <select id="type">
+            <option value="buy">Buy</option>
+            <option value="sell">Sell</option>
+        </select>
+        <input type="date" id="date" required>
+        <input type="number" id="amount" placeholder="BTC Amount" step="0.00000001" required>
+        <input type="number" id="price" placeholder="Price per BTC" required>
+        <input type="number" id="fees" placeholder="Fees" required>
+        <button onclick="addTransaction()">Add</button>
+    </div>
+
+    <!-- Transaction Tables -->
+    <h3>Buys</h3>
+    <table id="buys-table">
+        <thead><tr><th>Date</th><th>BTC</th><th>Price</th><th>Fees</th><th>Remaining BTC</th></tr></thead>
+        <tbody></tbody>
+    </table>
+
+    <h3>Sells</h3>
+    <table id="sells-table">
+        <thead><tr><th>Date</th><th>BTC</th><th>Price</th><th>Fees</th><th>Gain/Loss</th></tr></thead>
+        <tbody></tbody>
+    </table>
+
+    <!-- Tax Report -->
+    <h3>Tax Report</h3>
+    <div id="tax-report">
+        <p>Total Gains: $<span id="total-gains">0.00</span></p>
+        <p>Total Losses: $<span id="total-losses">0.00</span></p>
+        <p>Net Gain: $<span id="net-gain">0.00</span></p>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
