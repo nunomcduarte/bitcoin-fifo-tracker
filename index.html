@@ -7,6 +7,7 @@
 <body>
     <h1>Bitcoin FIFO Tracker</h1>
 
+    <!-- Transaction Input Form -->
     <div class="transaction-form">
         <h3>Add Transaction</h3>
         <select id="type">
@@ -20,18 +21,41 @@
         <button onclick="addTransaction()">Add</button>
     </div>
 
+    <!-- Buys List -->
     <h3>Buys</h3>
     <table id="buys-table">
-        <thead><tr><th>Date</th><th>BTC</th><th>Price</th><th>Fees</th><th>Remaining BTC</th><th>Action</th></tr></thead>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>BTC</th>
+                <th>Price</th>
+                <th>Fees</th>
+                <th>Remaining BTC</th>
+                <th>Action</th>
+            </tr>
+        </thead>
         <tbody></tbody>
     </table>
+    <button class="delete-btn" onclick="clearBuys()">Delete All Buys</button>
 
+    <!-- Sells List -->
     <h3>Sells</h3>
     <table id="sells-table">
-        <thead><tr><th>Date</th><th>BTC</th><th>Price</th><th>Fees</th><th>Gain/Loss</th><th>Action</th></tr></thead>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>BTC</th>
+                <th>Price</th>
+                <th>Fees</th>
+                <th>Gain/Loss</th>
+                <th>Action</th>
+            </tr>
+        </thead>
         <tbody></tbody>
     </table>
+    <button class="delete-btn" onclick="clearSells()">Delete All Sells</button>
 
+    <!-- Tax Report -->
     <h3>Tax Report</h3>
     <div id="tax-report">
         <p>Total Gains: $<span id="total-gains">0.00</span></p>

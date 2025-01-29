@@ -12,7 +12,7 @@ function addTransaction() {
     const fees = parseFloat(document.getElementById('fees').value);
 
     if (!date || isNaN(amount) || isNaN(price) || isNaN(fees)) {
-        alert("Please fill out all fields with valid data.");
+        alert("❌ Please fill out all fields with valid data.");
         return;
     }
 
@@ -26,7 +26,7 @@ function addTransaction() {
         if (success) {
             transactions.sells.push(transaction);
         } else {
-            alert("Not enough BTC available to sell.");
+            alert("❌ Not enough BTC available to sell.");
             return;
         }
     }
@@ -39,20 +39,18 @@ function addTransaction() {
 function calculateFIFO(sell) {
     let remaining = sell.amount;
     let totalCostBasis = 0;
-
     const availableBTC = transactions.buys.reduce((sum, buy) => sum + buy.remaining, 0);
+
     if (remaining > availableBTC) {
         return false;
     }
 
     for (let buy of transactions.buys) {
         if (buy.remaining <= 0) continue;
-
-        const used = Math.min(buy.remaining, remaining);
+        let used = Math.min(buy.remaining, remaining);
         totalCostBasis += round(used * buy.price, 2);
         buy.remaining -= used;
         remaining -= used;
-
         if (remaining <= 0) break;
     }
 
@@ -90,12 +88,20 @@ function updateUI() {
         `;
     });
 
-    const gains = transactions.sells.reduce((sum, sell) => (sell.gainLoss > 0 ? sum + sell.gainLoss : sum), 0);
-    const losses = transactions.sells.reduce((sum, sell) => (sell.gainLoss < 0 ? sum + sell.gainLoss : sum), 0);
+    document.getElementById('total-gains').textContent = transactions.sells.reduce((sum, sell) => sum + (sell.gainLoss > 0 ? sell.gainLoss : 0), 0).toFixed(2);
+    document.getElementById('total-losses').textContent = Math.abs(transactions.sells.reduce((sum, sell) => sum + (sell.gainLoss < 0 ? sell.gainLoss : 0), 0)).toFixed(2);
+}
 
-    document.getElementById('total-gains').textContent = gains.toFixed(2);
-    document.getElementById('total-losses').textContent = Math.abs(losses).toFixed(2);
-    document.getElementById('net-gain').textContent = (gains + losses).toFixed(2);
+function clearBuys() {
+    transactions.buys = [];
+    localStorage.setItem('btcTransactions', JSON.stringify(transactions));
+    updateUI();
+}
+
+function clearSells() {
+    transactions.sells = [];
+    localStorage.setItem('btcTransactions', JSON.stringify(transactions));
+    updateUI();
 }
 
 function resetForm() {
@@ -106,5 +112,4 @@ function resetForm() {
     document.getElementById('fees').value = '';
 }
 
-// Initialize UI
 updateUI();
