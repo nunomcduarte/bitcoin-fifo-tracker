@@ -70,7 +70,9 @@ function updateUI() {
                 <td>$${buy.price.toFixed(2)}</td>
                 <td>$${buy.fees.toFixed(2)}</td>
                 <td>${buy.remaining.toFixed(8)}</td>
-                <td><button onclick="editTransaction('buy', ${index})">Edit</button></td>
+                <td>
+                    <button onclick="editTransaction('buy', ${index})">Edit</button>
+                </td>
             </tr>
         `;
     });
@@ -83,7 +85,9 @@ function updateUI() {
                 <td>$${sell.price.toFixed(2)}</td>
                 <td>$${sell.fees.toFixed(2)}</td>
                 <td>$${sell.gainLoss.toFixed(2)}</td>
-                <td><button onclick="editTransaction('sell', ${index})">Edit</button></td>
+                <td>
+                    <button onclick="editTransaction('sell', ${index})">Edit</button>
+                </td>
             </tr>
         `;
     });
@@ -109,28 +113,59 @@ function clearSells() {
     const confirmDelete = confirm("Are you sure you want to delete all sell transactions? This cannot be undone.");
     if (!confirmDelete) return;
 
-    console.log("🗑 Deleting all sell transactions...");
-
-    // Clear the sells array
     transactions.sells = [];
-    console.log("✅ Sell transactions cleared:", transactions.sells);
-
-    // Reset "remaining" BTC for all buys to their original "amount"
     transactions.buys = transactions.buys.map(buy => {
-        console.log(`🔄 Resetting buy: ${buy.date}, Original Amount: ${buy.amount}`);
-        buy.remaining = buy.amount; // Reset remaining BTC
+        buy.remaining = buy.amount;
         return buy;
     });
 
-    console.log("✅ Buys reset:", transactions.buys);
-
-    // Save updated transactions to localStorage
     localStorage.setItem('btcTransactions', JSON.stringify(transactions));
-    console.log("💾 Transactions saved to localStorage.");
-
-    // Update the UI
     updateUI();
-    console.log("✅ UI updated.");
+}
+
+function editTransaction(type, index) {
+    const transaction = type === 'buy' ? transactions.buys[index] : transactions.sells[index];
+
+    document.getElementById('type').value = type;
+    document.getElementById('date').value = transaction.date;
+    document.getElementById('amount').value = transaction.amount;
+    document.getElementById('price').value = transaction.price;
+    document.getElementById('fees').value = transaction.fees;
+
+    const addButton = document.querySelector('.transaction-form button');
+    addButton.textContent = 'Save';
+    addButton.setAttribute('onclick', `saveTransaction('${type}', ${index})`);
+}
+
+function saveTransaction(type, index) {
+    const date = document.getElementById('date').value;
+    const amount = parseFloat(document.getElementById('amount').value);
+    const price = parseFloat(document.getElementById('price').value);
+    const fees = parseFloat(document.getElementById('fees').value);
+
+    if (!date || isNaN(amount) || isNaN(price) || isNaN(fees)) {
+        alert("❌ Please fill out all fields with valid data.");
+        return;
+    }
+
+    const updatedTransaction = { date, amount, price, fees };
+
+    if (type === 'buy') {
+        updatedTransaction.remaining = amount;
+        transactions.buys[index] = updatedTransaction;
+    } else {
+        const success = calculateFIFO(updatedTransaction);
+        if (success) {
+            transactions.sells[index] = updatedTransaction;
+        } else {
+            alert("❌ Not enough BTC available to sell.");
+            return;
+        }
+    }
+
+    localStorage.setItem('btcTransactions', JSON.stringify(transactions));
+    resetForm();
+    updateUI();
 }
 
 function resetForm() {
@@ -139,6 +174,10 @@ function resetForm() {
     document.getElementById('amount').value = '';
     document.getElementById('price').value = '';
     document.getElementById('fees').value = '';
+
+    const addButton = document.querySelector('.transaction-form button');
+    addButton.textContent = 'Add';
+    addButton.setAttribute('onclick', 'addTransaction()');
 }
 
 // Initialize UI
