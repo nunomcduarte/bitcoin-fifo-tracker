@@ -71,7 +71,8 @@ function updateUI() {
                 <td>$${buy.fees.toFixed(2)}</td>
                 <td>${buy.remaining.toFixed(8)}</td>
                 <td>
-                    <button onclick="editTransaction('buy', ${index})">Edit</button>
+                    <button class="edit-btn" onclick="editTransaction('buy', ${index})">Edit</button>
+                    <button class="delete-btn" onclick="deleteTransaction('buy', ${index})">Delete</button>
                 </td>
             </tr>
         `;
@@ -86,7 +87,8 @@ function updateUI() {
                 <td>$${sell.fees.toFixed(2)}</td>
                 <td>$${sell.gainLoss.toFixed(2)}</td>
                 <td>
-                    <button onclick="editTransaction('sell', ${index})">Edit</button>
+                    <button class="edit-btn" onclick="editTransaction('sell', ${index})">Edit</button>
+                    <button class="delete-btn" onclick="deleteTransaction('sell', ${index})">Delete</button>
                 </td>
             </tr>
         `;
@@ -100,24 +102,15 @@ function updateUI() {
     document.getElementById('net-gain').textContent = (gains + losses).toFixed(2);
 }
 
-function clearBuys() {
-    const confirmDelete = confirm("Are you sure you want to delete all buy transactions? This cannot be undone.");
+function deleteTransaction(type, index) {
+    const confirmDelete = confirm("Are you sure you want to delete this transaction?");
     if (!confirmDelete) return;
 
-    transactions.buys = [];
-    localStorage.setItem('btcTransactions', JSON.stringify(transactions));
-    updateUI();
-}
-
-function clearSells() {
-    const confirmDelete = confirm("Are you sure you want to delete all sell transactions? This cannot be undone.");
-    if (!confirmDelete) return;
-
-    transactions.sells = [];
-    transactions.buys = transactions.buys.map(buy => {
-        buy.remaining = buy.amount;
-        return buy;
-    });
+    if (type === 'buy') {
+        transactions.buys.splice(index, 1);
+    } else {
+        transactions.sells.splice(index, 1);
+    }
 
     localStorage.setItem('btcTransactions', JSON.stringify(transactions));
     updateUI();
