@@ -22,8 +22,8 @@ function addTransaction() {
         transaction.remaining = amount;
         transactions.buys.push(transaction);
     } else {
-        calculateFIFO(transaction);
-        if (transaction.costBasis !== undefined) {
+        const success = calculateFIFO(transaction);
+        if (success) {
             transactions.sells.push(transaction);
         } else {
             alert("Not enough BTC available to sell.");
@@ -33,11 +33,7 @@ function addTransaction() {
 
     localStorage.setItem('btcTransactions', JSON.stringify(transactions));
     updateUI();
-
-    document.getElementById('date').value = '';
-    document.getElementById('amount').value = '';
-    document.getElementById('price').value = '';
-    document.getElementById('fees').value = '';
+    resetForm();
 }
 
 function calculateFIFO(sell) {
@@ -46,10 +42,7 @@ function calculateFIFO(sell) {
 
     const availableBTC = transactions.buys.reduce((sum, buy) => sum + buy.remaining, 0);
     if (remaining > availableBTC) {
-        alert("Not enough BTC available to sell.");
-        sell.costBasis = undefined;
-        sell.gainLoss = undefined;
-        return;
+        return false;
     }
 
     for (let buy of transactions.buys) {
@@ -65,12 +58,13 @@ function calculateFIFO(sell) {
 
     sell.costBasis = totalCostBasis;
     sell.gainLoss = round((sell.amount * sell.price - sell.fees) - totalCostBasis, 2);
+    return true;
 }
 
 function updateUI() {
-    document.querySelectorAll('table tbody').forEach(t => t.innerHTML = '');
+    document.querySelectorAll('table tbody').forEach(t => (t.innerHTML = ''));
 
-    transactions.buys.forEach(buy => {
+    transactions.buys.forEach((buy, index) => {
         document.getElementById('buys-table').querySelector('tbody').innerHTML += `
             <tr>
                 <td>${buy.date}</td>
@@ -78,11 +72,12 @@ function updateUI() {
                 <td>$${buy.price.toFixed(2)}</td>
                 <td>$${buy.fees.toFixed(2)}</td>
                 <td>${buy.remaining.toFixed(8)}</td>
+                <td><button onclick="editTransaction('buy', ${index})">Edit</button></td>
             </tr>
         `;
     });
 
-    transactions.sells.forEach(sell => {
+    transactions.sells.forEach((sell, index) => {
         document.getElementById('sells-table').querySelector('tbody').innerHTML += `
             <tr>
                 <td>${sell.date}</td>
@@ -90,16 +85,26 @@ function updateUI() {
                 <td>$${sell.price.toFixed(2)}</td>
                 <td>$${sell.fees.toFixed(2)}</td>
                 <td>$${sell.gainLoss.toFixed(2)}</td>
+                <td><button onclick="editTransaction('sell', ${index})">Edit</button></td>
             </tr>
         `;
     });
 
-    const gains = transactions.sells.reduce((sum, sell) => sell.gainLoss > 0 ? sum + sell.gainLoss : sum, 0);
-    const losses = transactions.sells.reduce((sum, sell) => sell.gainLoss < 0 ? sum + sell.gainLoss : sum, 0);
+    const gains = transactions.sells.reduce((sum, sell) => (sell.gainLoss > 0 ? sum + sell.gainLoss : sum), 0);
+    const losses = transactions.sells.reduce((sum, sell) => (sell.gainLoss < 0 ? sum + sell.gainLoss : sum), 0);
 
     document.getElementById('total-gains').textContent = gains.toFixed(2);
     document.getElementById('total-losses').textContent = Math.abs(losses).toFixed(2);
     document.getElementById('net-gain').textContent = (gains + losses).toFixed(2);
 }
 
+function resetForm() {
+    document.getElementById('type').value = 'buy';
+    document.getElementById('date').value = '';
+    document.getElementById('amount').value = '';
+    document.getElementById('price').value = '';
+    document.getElementById('fees').value = '';
+}
+
+// Initialize UI
 updateUI();
