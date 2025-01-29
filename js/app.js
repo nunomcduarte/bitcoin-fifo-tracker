@@ -88,20 +88,49 @@ function updateUI() {
         `;
     });
 
-    document.getElementById('total-gains').textContent = transactions.sells.reduce((sum, sell) => sum + (sell.gainLoss > 0 ? sell.gainLoss : 0), 0).toFixed(2);
-    document.getElementById('total-losses').textContent = Math.abs(transactions.sells.reduce((sum, sell) => sum + (sell.gainLoss < 0 ? sell.gainLoss : 0), 0)).toFixed(2);
+    const gains = transactions.sells.reduce((sum, sell) => (sell.gainLoss > 0 ? sum + sell.gainLoss : sum), 0);
+    const losses = transactions.sells.reduce((sum, sell) => (sell.gainLoss < 0 ? sum + sell.gainLoss : sum), 0);
+
+    document.getElementById('total-gains').textContent = gains.toFixed(2);
+    document.getElementById('total-losses').textContent = Math.abs(losses).toFixed(2);
+    document.getElementById('net-gain').textContent = (gains + losses).toFixed(2);
 }
 
 function clearBuys() {
+    const confirmDelete = confirm("Are you sure you want to delete all buy transactions? This cannot be undone.");
+    if (!confirmDelete) return;
+
     transactions.buys = [];
     localStorage.setItem('btcTransactions', JSON.stringify(transactions));
     updateUI();
 }
 
 function clearSells() {
+    const confirmDelete = confirm("Are you sure you want to delete all sell transactions? This cannot be undone.");
+    if (!confirmDelete) return;
+
+    console.log("🗑 Deleting all sell transactions...");
+
+    // Clear the sells array
     transactions.sells = [];
+    console.log("✅ Sell transactions cleared:", transactions.sells);
+
+    // Reset "remaining" BTC for all buys to their original "amount"
+    transactions.buys = transactions.buys.map(buy => {
+        console.log(`🔄 Resetting buy: ${buy.date}, Original Amount: ${buy.amount}`);
+        buy.remaining = buy.amount; // Reset remaining BTC
+        return buy;
+    });
+
+    console.log("✅ Buys reset:", transactions.buys);
+
+    // Save updated transactions to localStorage
     localStorage.setItem('btcTransactions', JSON.stringify(transactions));
+    console.log("💾 Transactions saved to localStorage.");
+
+    // Update the UI
     updateUI();
+    console.log("✅ UI updated.");
 }
 
 function resetForm() {
@@ -112,4 +141,5 @@ function resetForm() {
     document.getElementById('fees').value = '';
 }
 
+// Initialize UI
 updateUI();
